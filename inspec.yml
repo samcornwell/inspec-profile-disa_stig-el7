@@ -9,5 +9,4 @@ version: 0.2.0
 
 depends:
   - name: linux-patch-baseline
-    git: https://github.com/dev-sec/linux-patch-baseline.git
-    branch: master
+    url: https://github.com/dev-sec/linux-patch-baseline

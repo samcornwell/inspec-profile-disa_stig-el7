@@ -61,7 +61,7 @@ audit records onto a different system or media from the system being audited.
 Uncomment the \"enable_krb5\" option in \"/etc/audisp/audisp-remote.conf\" and set
 it with the following line:
 
-enable_krb5 = yes"
+enable_krb5 = yes  "
 
   describe parse_config_file('/etc/audisp/audisp-remote.conf') do
     its('enable_krb5.strip') { should cmp('yes') }

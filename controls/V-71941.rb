@@ -45,19 +45,19 @@ identifiers after zero days of inactivity.
 following command:
 
 # grep -i inactive /etc/default/useradd
-INACTIVE=0
+INACTIVE=30
 
-If the value is not set to \"0\", is commented out, or is not defined, this is a
-finding."
+If the value is not set to \"30\", is commented out, or is not defined, this is a
+finding. The value should be less than or equal to 30."
   tag "fix": "Configure the operating system to disable account identifiers
 (individuals, groups, roles, and devices) after the password expires.
 
 Add the following line to \"/etc/default/useradd\" (or modify the line to have the
 required value):
-
-INACTIVE=0"
+i.e.
+INACTIVE=30"
 
   describe parse_config_file("/etc/default/useradd") do
-    its('INACTIVE') { should cmp '0' }
+    its('INACTIVE') { should cmp '30' }
   end
 end

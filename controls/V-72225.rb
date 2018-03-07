@@ -20,6 +20,34 @@ uri: http://iase.disa.mil
 -----------------
 =end
 
+# Banner
+banner_message = attribute(
+                           'V_72225_Banner',
+                           default:[ "","","", 
+"##################################################################################",
+"######################## CONSENT TO MONITOR NOTICE ###############################",
+"##################################################################################",
+" You are accessing a United States Government (USG)-authorized",
+" information system, which includes (1) this computer, (2) this computer network,",
+" (3) all computers connected to this network, and (4) all devices and storage",
+" media attached to this network or to a computer on this network.",
+" This information system is provided for USG-authorized use only. Unauthorized",
+" or improper use of this system may result in disciplinary action, as well as",
+" civil and criminal penalties. By using this information system, you understand",
+" and consent to the following: (1) You have no reasonable expectation of privacy",
+" regarding communications or data transiting or stored on this information system;",
+" (2) At any time, and for any lawful USG purpose, the USG may monitor, intercept,",
+" and search any communication or data transiting or stored on this information",
+" system; and, (3) Any communications or data transiting or stored on this",
+" information system may be disclosed or used for any lawful USG purpose. This",
+" policy is binding, and may not be altered without prior official approval.",
+"##################################################################################",
+"##################################################################################",					   
+						   "","",""].join("\n"),						   
+                           description: 'Banner Message'
+                         )
+
+
 control "V-72225" do
   title "The Standard Mandatory DoD Notice and Consent Banner must be displayed
 immediately prior to, or as part of, remote access logon prompts."
@@ -173,6 +201,6 @@ The SSH service must be restarted for changes to take effect."
 
   # @todo - dynamically find where banner stored
   describe file("/etc/issue") do
-    its('content') { should match /^banner-message-text='You are accessing a U\.S\. Government \(USG\) Information System \(IS\) that is provided for USG-authorized use only\.\s+By using this IS \(which includes any device attached to this IS\), you consent to the following conditions:\s+-The USG routinely intercepts and monitors communications on this IS for purposes including, but not limited to, penetration testing, COMSEC monitoring, network operations and defense, personnel misconduct \(PM\), law enforcement \(LE\), and counterintelligence \(CI\) investigations.\s+-At any time, the USG may inspect and seize data stored on this IS.\s+-Communications using, or data stored on, this IS are not private, are subject to routine monitoring, interception, and search, and may be disclosed or used for any USG-authorized purpose.\s+-This IS includes security measures \(e\.g\., authentication and access controls\) to protect USG interests--not for your personal benefit or privacy.\s+-Notwithstanding the above, using this IS does not constitute consent to PM, LE or CI investigative searching or monitoring of the content of privileged communications, or work product, related to personal representation or services by attorneys, psychotherapists, or clergy, and their assistants. Such communications and work product are private and confidential. See User Agreement for details\.'$/ }
+    its('content') { should match /#{banner_message}/ }
   end
 end

@@ -67,15 +67,17 @@ the integrity of LDAP remote access sessions.
 Set the \"tls_cacertfile\" option in \"/etc/pam_ldap.conf\" to point to the path for
 the X.509 certificates used for peer authentication."
 
-  describe parse_config_file('/etc/sysconfig/authconfig') do
-    its('USELDAPAUTH') { should cmp 'yes' }
-  end
-  # @todo - pam resource - also dynamically find directory?
-  describe command('grep -i cacertfile /etc/pam_ldap.conf') do
-    its('stdout.strip') { should match /^tls_cacertfile \/etc\/openldap\/ldap-cacert.pem$/}
-  end
-  describe file('/etc/openldap/ldap-cacert.pem') do
-    it { should exist }
-    it { should be_file }
+  authconfig = file('/etc/sysconfig/authconfig')
+  if authconfig.file? and !authconfig.content.empty?
+    if parse_config(authconfig.content).params['USELDAPAUTH'].downcase.eql? 'yes'
+      # @todo - pam resource - also dynamically find directory?
+      describe command('grep -i cacertfile /etc/pam_ldap.conf') do
+        its('stdout.strip') { should match /^tls_cacertfile \/etc\/openldap\/ldap-cacert.pem$/}
+      end
+      describe file('/etc/openldap/ldap-cacert.pem') do
+        it { should exist }
+        it { should be_file }
+      end
+    end
   end
 end

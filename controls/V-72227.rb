@@ -61,13 +61,19 @@ the integrity of LDAP authentication sessions.
 Set the USELDAPAUTH=yes in \"/etc/sysconfig/authconfig\".
 
 Set \"ssl start_tls\" in \"/etc/pam_ldap.conf\"."
-  describe.one do
-    describe parse_config_file('/etc/sysconfig/authconfig') do
-      its('USELDAPAUTH') { should_not cmp 'yes' }
+
+  authconfig = parse_config_file('/etc/sysconfig/authconfig')
+
+  if os.release.to_f < 7
+    if authconfig.params['USELDAPAUTH'].eql? 'yes'
+      describe command('grep -i ssl /etc/pam_ldap.conf') do
+        its('stdout.strip') { should match %r{^ssl start_tls$}}
+      end
     end
-    # @todo - pam resource
-    describe command('grep -i ssl /etc/pam_ldap.conf') do
-      its('stdout.strip') { should match %r{^ssl start_tls$} }
+  else
+    describe authconfig do
+      # @todo - not sure if we should make sure USELDAP is off as well (don't think we need to)
+      its('USELDAPAUTH') { should_not cmp 'yes' }
     end
   end
 end

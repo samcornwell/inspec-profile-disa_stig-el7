@@ -75,9 +75,31 @@ the X.509 certificates used for peer authentication."
 
   authconfig = parse_config_file('/etc/sysconfig/authconfig')
 
-  if authconfig.params['USESSSD'].eql? 'yes' and
-     !command('grep "^\s*id_provider\s*=\s*ldap" /etc/sssd/sssd.conf').stdout.strip.empty?
+  USESSSD_ldap_enabled = if authconfig.params['USESSSD'].eql? 'yes' and
+    !command('grep "^\s*id_provider\s*=\s*ldap" /etc/sssd/sssd.conf').stdout.strip.empty?
+    true else false end
 
+  USESSSDAUTH_ldap_enabled = if authconfig.params['USESSSDAUTH'].eql? 'yes' and
+    !command('grep "^\s*[a-z]*_provider\s*=\s*ldap" /etc/sssd/sssd.conf').stdout.strip.empty?
+    true else false end
+
+  USELDAPAUTH_ldap_enabled = if authconfig.params['USELDAPAUTH'].eql? 'yes'
+    true else false end
+
+  # @todo - verify best way to check this
+  VAS_QAS_ldap_enabled = if file('/opt/quest/bin/vastool').exist? or
+    file('/etc/opt/quest/vas/vas.conf').exist?
+    true else false end
+
+  if !(USESSSD_ldap_enabled or USESSSDAUTH_ldap_enabled or
+       USELDAPAUTH_ldap_enabled or VAS_QAS_ldap_enabled)
+    impact 0.0
+    describe "LDAP not enabled" do
+      skip "LDAP not enabled using any known mechanisms, this control is Not Applicable."
+    end
+  end
+
+  if USESSSD_ldap_enabled
     ldap_id_use_start_tls = command('grep ldap_id_use_start_tls /etc/sssd/sssd.conf')
     describe ldap_id_use_start_tls do
       its('stdout.strip') { should match %r{^ldap_id_use_start_tls = true$}}
@@ -90,9 +112,7 @@ the X.509 certificates used for peer authentication."
     end
   end
 
-  if authconfig.params['USESSSDAUTH'].eql? 'yes' and
-     !command('grep "^\s*[a-z]*_provider\s*=\s*ldap" /etc/sssd/sssd.conf').stdout.strip.empty?
-
+  if USESSSDAUTH_ldap_enabled
     describe command('grep -i ldap_tls_cacert /etc/sssd/sssd.conf') do
       its('stdout.strip') { should match %r{^ldap_tls_cacert = #{Regexp.escape(LDAP_CA_CERT)}$}}
     end
@@ -102,20 +122,22 @@ the X.509 certificates used for peer authentication."
     end
   end
 
-  if os.release.to_f < 7
-    if authconfig.params['USELDAPAUTH'].eql? 'yes'
-      describe command('grep -i tls_cacertfile /etc/pam_ldap.conf') do
-        its('stdout.strip') { should match %r{^tls_cacertfile #{Regexp.escape(LDAP_CA_CERT)}$}}
-      end
-      describe file(LDAP_CA_CERT) do
-        it { should exist }
-        it { should be_file }
-      end
+  if USELDAPAUTH_ldap_enabled
+    describe command('grep -i tls_cacertfile /etc/pam_ldap.conf') do
+      its('stdout.strip') { should match %r{^tls_cacertfile #{Regexp.escape(LDAP_CA_CERT)}$}}
     end
-  else
-    describe authconfig do
-      # @todo - not sure if we should make sure USELDAP is off as well (don't think we need to)
-      its('USELDAPAUTH') { should_not cmp 'yes' }
+    describe file(LDAP_CA_CERT) do
+      it { should exist }
+      it { should be_file }
+    end
+  end
+
+  # @todo - not sure how USELDAP is implemented and how it affects the system, so ignore for now
+
+  if VAS_QAS_ldap_enabled
+    describe command('grep ldap-gsssasl-security-layers /etc/opt/quest/vas/vas.conf') do
+      its('stdout.strip') { should match %r{^ldap-gsssasl-security-layers = 0$}}
+      its('stdout.strip.lines.length') { should eq 1 }
     end
   end
 end

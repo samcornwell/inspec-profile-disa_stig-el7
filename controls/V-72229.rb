@@ -77,7 +77,7 @@ the X.509 certificates used for peer authentication."
   authconfig = parse_config_file('/etc/sysconfig/authconfig')
 
   if authconfig.params['USESSSD'].eql? 'yes' and
-     !command('grep "^[[:space:]]*id_provider[[:space:]]*=[[:space:]]*ldap" /etc/sssd/sssd.conf').stdout.strip.empty?
+     !command('grep "^\s*id_provider\s*=\s*ldap" /etc/sssd/sssd.conf').stdout.strip.empty?
 
     ldap_id_use_start_tls = command('grep ldap_id_use_start_tls /etc/sssd/sssd.conf')
     describe ldap_id_use_start_tls do
@@ -92,7 +92,7 @@ the X.509 certificates used for peer authentication."
   end
 
   if authconfig.params['USESSSDAUTH'].eql? 'yes' and
-     !command('grep "^[[:space:]]*[a-z]*_provider[[:space:]]*=[[:space:]]*ldap" /etc/sssd/sssd.conf').stdout.strip.empty?
+     !command('grep "^\s*[a-z]*_provider\s*=\s*ldap" /etc/sssd/sssd.conf').stdout.strip.empty?
 
     describe command('grep -i ldap_tls_cacertdir /etc/sssd/sssd.conf') do
       its('stdout.strip') { should match %r{^ldap_tls_cacertdir = #{Regexp.escape(LDAP_CA_CERTDIR)}$}}

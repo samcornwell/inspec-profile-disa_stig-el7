@@ -76,21 +76,16 @@ the X.509 certificates used for peer authentication."
 
   authconfig = parse_config_file('/etc/sysconfig/authconfig')
 
-  USESSSD_ldap_enabled = if authconfig.params['USESSSD'].eql? 'yes' and
-    !command('grep "^\s*id_provider\s*=\s*ldap" /etc/sssd/sssd.conf').stdout.strip.empty?
-    true else false end
+  USESSSD_ldap_enabled = (authconfig.params['USESSSD'].eql? 'yes' and
+    !command('grep "^\s*id_provider\s*=\s*ldap" /etc/sssd/sssd.conf').stdout.strip.empty?)
 
-  USESSSDAUTH_ldap_enabled = if authconfig.params['USESSSDAUTH'].eql? 'yes' and
-    !command('grep "^\s*[a-z]*_provider\s*=\s*ldap" /etc/sssd/sssd.conf').stdout.strip.empty?
-    true else false end
+  USESSSDAUTH_ldap_enabled = (authconfig.params['USESSSDAUTH'].eql? 'yes' and
+    !command('grep "^\s*[a-z]*_provider\s*=\s*ldap" /etc/sssd/sssd.conf').stdout.strip.empty?)
 
-  USELDAPAUTH_ldap_enabled = if authconfig.params['USELDAPAUTH'].eql? 'yes'
-    true else false end
+  USELDAPAUTH_ldap_enabled = (authconfig.params['USELDAPAUTH'].eql? 'yes')
 
   # @todo - verify best way to check this
-  VAS_QAS_ldap_enabled = if file('/opt/quest/bin/vastool').exist? or
-    file('/etc/opt/quest/vas/vas.conf').exist?
-    true else false end
+  VAS_QAS_ldap_enabled = (package('vasclnt').installed? or service('vasd').installed?)
 
   if !(USESSSD_ldap_enabled or USESSSDAUTH_ldap_enabled or
        USELDAPAUTH_ldap_enabled or VAS_QAS_ldap_enabled)

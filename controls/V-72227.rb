@@ -64,16 +64,33 @@ Set \"ssl start_tls\" in \"/etc/pam_ldap.conf\"."
 
   authconfig = parse_config_file('/etc/sysconfig/authconfig')
 
-  if os.release.to_f < 7
-    if authconfig.params['USELDAPAUTH'].eql? 'yes'
-      describe command('grep -i ssl /etc/pam_ldap.conf') do
-        its('stdout.strip') { should match %r{^ssl start_tls$}}
-      end
+  USELDAPAUTH_ldap_enabled = if authconfig.params['USELDAPAUTH'].eql? 'yes'
+    true else false end
+
+  # @todo - verify best way to check this
+  VAS_QAS_ldap_enabled = if file('/opt/quest/bin/vastool').exist? or
+    file('/etc/opt/quest/vas/vas.conf').exist?
+    true else false end
+
+  if !(USELDAPAUTH_ldap_enabled or VAS_QAS_ldap_enabled )
+    impact 0.0
+    describe "LDAP not enabled" do
+      skip "LDAP not enabled using any known mechanisms, this control is Not Applicable."
     end
-  else
-    describe authconfig do
-      # @todo - not sure if we should make sure USELDAP is off as well (don't think we need to)
-      its('USELDAPAUTH') { should_not cmp 'yes' }
+  end
+
+  if USELDAPAUTH_ldap_enabled
+    describe command('grep -i ssl /etc/pam_ldap.conf') do
+      its('stdout.strip') { should match %r{^ssl start_tls$}}
+    end
+  end
+
+  # @todo - not sure how USELDAP is implemented and how it affects the system, so ignore for now
+
+  if VAS_QAS_ldap_enabled
+    describe command('grep ldap-gsssasl-security-layers /etc/opt/quest/vas/vas.conf') do
+      its('stdout.strip') { should match %r{^ldap-gsssasl-security-layers = 0$}}
+      its('stdout.strip.lines.length') { should eq 1 }
     end
   end
 end

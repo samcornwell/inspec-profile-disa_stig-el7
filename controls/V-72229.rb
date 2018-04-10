@@ -20,6 +20,12 @@ uri: http://iase.disa.mil
 -----------------
 =end
 
+LDAP_CA_CERTDIR = attribute(
+  'ldap_ca_certdir',
+  default: '/etc/openldap/certs',
+  description: "Certificate directory containing CA certificate for LDAP"
+)
+
 control "V-72229" do
   title "The operating system must implement cryptography to protect the integrity
 of Lightweight Directory Access Protocol (LDAP) communications."
@@ -70,23 +76,47 @@ the X.509 certificates used for peer authentication."
 
   authconfig = parse_config_file('/etc/sysconfig/authconfig')
 
-  describe.one do
-    describe authconfig do
-      its('USELDAPAUTH') { should_not cmp 'yes' }
+  if authconfig.params['USESSSD'].eql? 'yes' and
+     !command('grep "^[[:space:]]*id_provider[[:space:]]*=[[:space:]]*ldap" /etc/sssd/sssd.conf').stdout.strip.empty?
+
+    ldap_id_use_start_tls = command('grep ldap_id_use_start_tls /etc/sssd/sssd.conf')
+    describe ldap_id_use_start_tls do
+      its('stdout.strip') { should match %r{^ldap_id_use_start_tls = true$}}
     end
-    # @todo - pam resource - also dynamically find directory?
-    describe command('grep -i cacert /etc/pam_ldap.conf') do
-      its('stdout.strip') { should match %r{^tls_cacertdir /etc/openldap/certs$} }
+
+    ldap_id_use_start_tls.stdout.strip.each_line do |line|
+      describe line do
+        it { should match %r{^ldap_id_use_start_tls = true$}}
+      end
     end
   end
 
-  describe.one do
-    describe authconfig do
-      its('USELDAPAUTH') { should_not cmp 'yes' }
+  if authconfig.params['USESSSDAUTH'].eql? 'yes' and
+     !command('grep "^[[:space:]]*[a-z]*_provider[[:space:]]*=[[:space:]]*ldap" /etc/sssd/sssd.conf').stdout.strip.empty?
+
+    describe command('grep -i ldap_tls_cacertdir /etc/sssd/sssd.conf') do
+      its('stdout.strip') { should match %r{^ldap_tls_cacertdir = #{Regexp.escape(LDAP_CA_CERTDIR)}$}}
     end
-    describe file('/etc/openldap/certs') do
+    describe file(LDAP_CA_CERTDIR) do
       it { should exist }
       it { should be_directory }
+    end
+  end
+
+  if os.release.to_f < 7
+    if authconfig.params['USELDAPAUTH'].eql? 'yes'
+      describe command('grep -i tls_cacertdir /etc/pam_ldap.conf') do
+        its('stdout.strip') { should match %r{^tls_cacertdir #{Regexp.escape(LDAP_CA_CERTDIR)}$}}
+      end
+      describe file(LDAP_CA_CERTDIR) do
+        it { should exist }
+        it { should be_directory }
+      end
+    end
+  else
+    describe authconfig do
+      # @todo - not sure if we should make sure USELDAP is off as well (don't think we need to)
+      its('USELDAPAUTH') { should_not cmp 'yes' }
     end
   end
 end

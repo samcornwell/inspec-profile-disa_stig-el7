@@ -64,13 +64,10 @@ Set \"ssl start_tls\" in \"/etc/pam_ldap.conf\"."
 
   authconfig = parse_config_file('/etc/sysconfig/authconfig')
 
-  USELDAPAUTH_ldap_enabled = if authconfig.params['USELDAPAUTH'].eql? 'yes'
-    true else false end
+  USELDAPAUTH_ldap_enabled = (authconfig.params['USELDAPAUTH'].eql? 'yes')
 
   # @todo - verify best way to check this
-  VAS_QAS_ldap_enabled = if file('/opt/quest/bin/vastool').exist? or
-    file('/etc/opt/quest/vas/vas.conf').exist?
-    true else false end
+  VAS_QAS_ldap_enabled = (package('vasclnt').installed? or service('vasd').installed?)
 
   if !(USELDAPAUTH_ldap_enabled or VAS_QAS_ldap_enabled )
     impact 0.0

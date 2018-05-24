@@ -25,6 +25,7 @@ compromised.
   tag "cci": ["CCI-000195"]
   tag "documentable": false
   tag "nist": ["IA-5 (1) (b)", "Rev_4"]
+  tag "subsystems": ['pam', 'pwquality', 'password']
   tag "check": "The \"maxrepeat\" option sets the maximum number of allowed
 same consecutive characters in a new password.
 
@@ -44,6 +45,7 @@ line to have the required value):
 
 maxrepeat = 3"
   tag "fix_id": "F-78267r2_fix"
+
   describe parse_config_file("/etc/security/pwquality.conf") do
     its('maxrepeat.to_i') { should cmp <= 3 }
   end

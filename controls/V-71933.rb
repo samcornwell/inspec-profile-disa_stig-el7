@@ -25,6 +25,7 @@ is a password that is not changed per policy requirements."
   tag "cci": ["CCI-000200"]
   tag "documentable": false
   tag "nist": ["IA-5 (1) (e)", "Rev_4"]
+  tag "subsystems": ['pam', 'password']
   tag "check": "Verify the operating system prohibits password reuse for a
 minimum of five generations.
 
@@ -48,5 +49,9 @@ password sufficient pam_unix.so use_authtok sha512 shadow remember=5"
 
   describe command("grep -Po '^password\s+sufficient\s+pam_unix.so.*$' /etc/pam.d/system-auth-ac | grep -Po '(?<=pam_unix.so).*$' | grep -Po 'remember\s*=\s*[0-9]+' | cut -d '=' -f2") do
     its('stdout.to_i') { should be >= MIN_REUSE_GENERATIONS }
+  end
+
+  describe pam("/etc/pam.d/system-auth") do
+    its('lines') { should match_pam_rule('password (required|requisite|sufficient) pam_(unix|pwhistory).so').any_with_args(/remember=(\d{2,}|[5-9])/) }
   end
 end

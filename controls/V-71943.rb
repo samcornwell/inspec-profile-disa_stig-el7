@@ -26,7 +26,7 @@ brute-forcing, is reduced. Limits are imposed by locking the account."
   tag "cci": ["CCI-002238"]
   tag "documentable": false
   tag "nist": ["AC-7 b", "Rev_4"]
-  tag "subsystems": ['pam']
+  tag "subsystems": ['pam', 'faillock']
   tag "check": "Verify the operating system automatically locks an account for the
 maximum period for which the system can be configured.
 
@@ -116,6 +116,26 @@ account required pam_faillock.so"
 
   describe command('grep -Po "^auth\s+\[default=die\]\s+pam_faillock.so.*$" /etc/pam.d/system-auth-ac | grep -Po "(?<=pam_faillock.so).*$" | grep -Po "unlock_time\s*=\s*[0-9]+" | cut -d "=" -f2') do
     its('stdout.to_i') { should cmp >= LOCKOUT_TIME }
+  end
+
+
+  describe pam('/etc/pam.d/password-auth') do
+    required_rules = [
+      'auth required pam_faillock.so unlock_time=(604800|0|never)',
+      'auth sufficient pam_unix.so try_first_pass',
+      'auth [default=die] pam_faillock.so unlock_time=(604800|0|never)'
+    ]
+    alternate_rules = [
+      'auth required pam_faillock.so unlock_time=(604800|0|never)',
+      'auth sufficient pam_sss.so forward_pass',
+      'auth sufficient pam_unix.so try_first_pass',
+      'auth [default=die] pam_faillock.so unlock_time=(604800|0|never)'
+    ]
+
+    its('lines') {
+      should match_pam_rules(required_rules).exactly.or \
+             match_pam_rules(alternate_rules).exactly
+    }
   end
 end
 

@@ -19,6 +19,7 @@ plain text."
   tag "cci": ["CCI-000196"]
   tag "documentable": false
   tag "nist": ["IA-5 (1) (c)", "Rev_4"]
+  tag "subsystems": ['pam', 'password']
   tag "check": "Verify the PAM system service is configured to store only
 encrypted representations of passwords. The strength of encryption that must be
 used to hash passwords for all accounts is SHA512.
@@ -38,7 +39,12 @@ Add the following line in \"/etc/pam.d/system-auth-ac\":
 
 password sufficient pam_unix.so sha512"
   tag "fix_id": "F-78271r2_fix"
+
   describe file("/etc/pam.d/system-auth-ac") do
     its('content') { should match %r(^password\s+sufficient\s+pam_unix.so .*sha512.*$) }
+  end
+
+  describe pam("/etc/pam.d/system-auth") do
+    its('lines') { should match_pam_rule('password sufficient pam_unix.so sha512') }
   end
 end

@@ -13,6 +13,7 @@ files, they may be able to log on to the system as another user."
   tag "cci": ["CCI-000366"]
   tag "documentable": false
   tag "nist": ["CM-6 b", "Rev_4"]
+  tag "subsystems": ["ssh"]
   tag "check": "Verify the SSH daemon performs strict mode checking of home
 directory configuration files.
 

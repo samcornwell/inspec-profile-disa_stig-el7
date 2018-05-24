@@ -12,6 +12,7 @@ host could be impersonated."
   tag "cci": ["CCI-000366"]
   tag "documentable": false
   tag "nist": ["CM-6 b", "Rev_4"]
+  tag "subsystems": ["ssh"]
   tag "check": "Verify the SSH private host key files have mode \"0600\" or
 less permissive.
 

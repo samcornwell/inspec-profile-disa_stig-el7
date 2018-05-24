@@ -14,6 +14,7 @@ immediate root access to the system."
   tag "cci": ["CCI-000197", "CCI-000366"]
   tag "documentable": false
   tag "nist": ["IA-5 (1) (c)", "CM-6 b", "Rev_4"]
+  tag "subsystems": ["ssh"]
   tag "check": "Check the version of the operating system with the following
 command:
 

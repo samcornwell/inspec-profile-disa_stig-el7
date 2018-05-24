@@ -40,7 +40,7 @@ identification of individuals in group accounts (e.g., shared privilege
 accounts) or for detailed accountability of individual activity.
   "
   if SMART_CARD_STATUS.eql?('enabled')
-  impact 0.5
+    impact 0.5
   else
     impact 0.0
   end
@@ -55,6 +55,7 @@ accounts) or for detailed accountability of individual activity.
   tag "cci": ["CCI-000766"]
   tag "documentable": false
   tag "nist": ["IA-2 (2)", "Rev_4"]
+  tag "subsystems": ['pam', 'smartcard']
   tag "check": "Verify the operating system requires multifactor authentication
 to uniquely identify organizational users using multifactor authentication.
 

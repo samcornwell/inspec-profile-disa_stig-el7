@@ -32,6 +32,7 @@ and releases the resources associated with that session.
   tag "cci": ["CCI-001133", "CCI-002361"]
   tag "documentable": false
   tag "nist": ["SC-10", "AC-12", "Rev_4"]
+  tag "subsystems": ["ssh"]
   tag "check": "Verify the operating system automatically terminates a user
 session after inactivity time-outs have expired.
 

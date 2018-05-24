@@ -138,5 +138,16 @@ program. The \"authconfig\" program should not be used."
     subject { command('grep -Po "^auth\s+\[default=die\]\s+pam_faillock.so.*$" /etc/pam.d/system-auth-ac | grep -Po "(?<=pam_faillock.so).*$"') }
     its('stdout.strip') { should include 'even_deny_root' }
   end
+
+
+  describe pam('/etc/pam.d/password-auth') do
+    required_lines = [
+      'auth required pam_faillock.so even_deny_root',
+      'auth sufficient pam_unix.so try_first_pass',
+      'auth [default=die] pam_faillock.so even_deny_root'
+    ]
+
+    its('lines') { should match_pam_rules(required_lines) }
+  end
 end
 

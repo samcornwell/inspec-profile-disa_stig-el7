@@ -14,6 +14,7 @@ requirement is SHA."
   tag "cci": ["CCI-001453"]
   tag "documentable": false
   tag "nist": ["AC-17 (2)", "Rev_4"]
+  tag "subsystems": ["ssh"]
   tag "check": "Verify the SSH daemon is configured to only use MACs employing
 FIPS 140-2-approved ciphers.
 

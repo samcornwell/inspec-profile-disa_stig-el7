@@ -19,6 +19,7 @@ configuration and has the ability to limit brute-force attacks on the system."
   tag "cci": ["CCI-000192"]
   tag "documentable": false
   tag "nist": ["IA-5 (1) (a)", "Rev_4"]
+  tag "subsystems": ['pam', 'pwquality', 'password']
   tag "check": "Verify the operating system uses \"pwquality\" to enforce the
 password complexity rules.
 
@@ -43,7 +44,6 @@ password    required    pam_pwquality.so retry=3
 Note: The value of \"retry\" should be between \"1\" and \"3\"."
   tag "fix_id": "F-79605r2_fix"
 
-  # @todo - pam resource
   max_retry_val = command("grep -Po '(?<=pam_pwquality.so ).*$' /etc/pam.d/passwd | grep -Po '[\s]*retry[\s]*=[0-9]+' | cut -d '=' -f2").stdout.strip
   if max_retry_val != ""
     describe max_retry_val.to_i do
@@ -55,6 +55,9 @@ Note: The value of \"retry\" should be between \"1\" and \"3\"."
       it { should_not eq "" }
     end
   end 
-  only_if { package('gnome-desktop3').installed? }
+
+  describe pam('/etc/pam.d/passwd') do
+    its('lines') { should match_pam_rule('password (required|requisite) pam_pwquality.so')}
+  end
 end
 

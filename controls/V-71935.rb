@@ -28,6 +28,7 @@ password.
   tag "cci": ["CCI-000205"]
   tag "documentable": false
   tag "nist": ["IA-5 (1) (a)", "Rev_4"]
+  tag "subsystems": ['pam', 'pwquality', 'password']
   tag "check": "Verify the operating system enforces a minimum 15-character
 password length. The \"minlen\" option sets the minimum number of characters in
 a new password.
